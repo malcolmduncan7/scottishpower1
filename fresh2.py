@@ -4,7 +4,9 @@ import pandas as pd
 import os
 import re
 
-def make_text(words):
+
+
+def make_text(words):#<-- possibly sourse of problem
     line_dict = {} 
     words.sort(key=lambda w: w[0])
     for w in words:  
@@ -15,7 +17,7 @@ def make_text(words):
         line_dict[y1] = line  
     lines = list(line_dict.items())
     lines.sort()  
-    return "n".join([" ".join(line[1]) for line in lines])
+    return "j".join([" ".join(line[1]) for line in lines])
 
 
 
@@ -28,24 +30,23 @@ page = doc[0]
 #extracting text from document 
 words = page.get_text("blocks") 
 
+#all pages of the pdf appeneded to all_blocks and all_blocks text for each page
+all_blocks = []
+for pageno in range(0,len(doc)-1): 
+    page = doc[pageno] #<-- goes through  all pages
+    words = page.get_text("blocks") #<-- gets blocks of text with rectangle coordinates 
+    rec = page.rect #<-- rect is a tuple of 4 numbers to get coordinates for the blocks
+    mywords = [w for w in words if fitz.Rect(w[:4]) in rec] #<-- my_words is words in rectangle from rec
+    blk = make_text(mywords) #<-- calls function to make_text possibly sourse of problem
+    all_blocks.append(blk) #<-- appends blk to all_blocks list
 
-all_annots = []
-for pageno in range(0,len(doc)-1):
-    page = doc[pageno]
-    words = page.get_text("blocks")
-    rec = page.rect
-    mywords = [w for w in words if fitz.Rect(w[:4]) in rec]
-    ann = make_text(mywords)
-    all_annots.append(ann)
-
-#splitting the list 
+#splitting the list of all_annots after j set out in function make_text
 cont=[]
-for i in range(0,len(all_annots)):
-    cont.append(all_annots[i].split('\n'))
+for i in range(0,len(all_blocks)):
+    cont.append(all_blocks[i].split('j')) #splits the list of all_blocks after j set out in function make_text the orginal code was cont.append(all_blocks[i].split('j',1)) but did not work, the 1 represents the number of splits to be made which would be one split per block after j 
     
-#filter unwanted text 
-    
-liss = []
+#liss filter unwanted text --- this part is fine 
+liss = [] #<-- replaces unwanted character and appends to list
 for i in range(0,len(cont)): 
     lis=[]
     for j in cont[i]:
@@ -53,33 +54,37 @@ for i in range(0,len(cont)):
         j=j.replace('#','')
         j=j.replace('*','')
         j=j.replace(':','')
-        #j=j.replace('n','')
-        
-        
-       # j=j.replace('n*','')
-        
         j=j.strip()
         #print(j)
         lis.append(j)
     liss.append(lis)
-
+    
+#this part doesnt work because splitting the text is wrong due to the function make_text I think  
 keys=[]
 values=[]
 for i in liss:
     keys.append(i[0])
-    values.append(i[1])  
+    values.append(i[1])
 for i in range(0, len(values)):
     for j in range(0,len(values[i])):
         if values[i][j]>='A' and values[i][j]<='Z':
             break            
     if j==len(values[i])-1:
-       values[i]=values[i].replace(' ','')
+       values[i]=values[i].replace(' ','')   
+
+report=dict(zip(keys,values))
+
+
+
        
-print(all_annots)  
+#print(rec)
 #print(cont) 
-#print(liss)   
+print(liss[4][18])   
 #print(keys)
-#print(values)   
+#print(values[6][10])
+#print(report) 
+#print(value)  
+#print(all_blocks[4][16])
 
 
       
